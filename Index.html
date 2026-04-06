@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARIA - AI Life Admin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0e1a; color: #e8e4dc; font-family: 'DM Sans', sans-serif; }
+    .app { min-height: 100vh; background: #0a0e1a; background-image: radial-gradient(ellipse at 20% 10%, rgba(180,140,80,0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 90%, rgba(60,80,140,0.1) 0%, transparent 50%); }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: rgba(255,255,255,0.03); border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; padding: 32px 0; backdrop-filter: blur(10px); z-index: 100; }
+    .logo { padding: 0 24px 32px; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #c9a84c; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 24px; }
+    .logo span { display: block; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 400; color: rgba(232,228,220,0.4); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; cursor: pointer; color: rgba(232,228,220,0.5); font-size: 14px; font-weight: 500; border-left: 2px solid transparent; transition: all 0.2s; }
+    .nav-item:hover { color: #e8e4dc; background: rgba(255,255,255,0.04); }
+    .nav-item.active { color: #c9a84c; border-left-color: #c9a84c; background: rgba(201,168,76,0.08); }
+    .main { margin-left: 220px; min-height: 100vh; padding: 48px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #e8e4dc; margin-bottom: 6px; }
+    .page-sub { color: rgba(232,228,220,0.45); font-size: 14px; margin-bottom: 40px; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(232,228,220,0.45); margin-bottom: 18px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+    .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 24px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 36px; color: #c9a84c; font-weight: 700; }
+    .stat-label { font-size: 13px; color: rgba(232,228,220,0.45); margin-top: 4px; }
+    textarea, input[type="text"] { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #e8e4dc; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 14px 16px; resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.6; }
+    textarea:focus, input[type="text"]:focus { border-color: rgba(201,168,76,0.5); }
+    textarea::placeholder, input::placeholder { color: rgba(232,228,220,0.25); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+    .btn-gold { background: #c9a84c; color: #0a0e1a; }
+    .btn-gold:hover { background: #d9b85c; transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,0.06); color: #e8e4dc; border: 1px solid rgba(255,255,255,0.1); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(10,14,26,0.3); border-top-color: #0a0e1a; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-response { margin-top: 20px; background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2); border-radius: 12px; padding: 22px; font-size: 14px; line-height: 1.8; color: #e8e4dc; white-space: pre-wrap; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+    .tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.07); border-radius: 6px; padding: 5px 10px; font-size: 13px; margin: 4px; border: 1px solid rgba(255,255,255,0.1); }
+    .tag button { background: none; border: none; color: rgba(232,228,220,0.4); cursor: pointer; font-size: 14px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .input-row input { flex: 1; }
+    .tip-box { background: rgba(60,80,180,0.08); border: 1px solid rgba(60,80,180,0.2); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: rgba(232,228,220,0.6); line-height: 1.7; margin-top: 16px; }
+    .empty-state { text-align: center; padding: 40px; color: rgba(232,228,220,0.3); font-size: 14px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .badge-red { background: rgba(220,60,60,0.15); color: #e87878; border: 1px solid rgba(220,60,60,0.2); }
+    .badge-amber { background: rgba(201,168,76,0.15); color: #c9a84c; border: 1px solid rgba(201,168,76,0.2); }
+    .badge-green { background: rgba(60,180,120,0.15); color: #5cd4a0; border: 1px solid rgba(60,180,120,0.2); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    async function callClaude(system, user) {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system,
+          messages: [{ role: "user", content: user }]
+        })
+      });
+      const data = await res.json();
+      return data.content?.[0]?.text || "No response.";
+    }
+
+    function Dashboard({ taskCount, emailCount }) {
+      return (
+        <div>
+          <div className="page-title">Good morning ☀️</div>
+          <div className="page-sub">Here's your life admin overview for today.</div>
+          <div className="grid-3">
+            <div className="stat-card"><div className="stat-value">{taskCount}</div><div className="stat-label">Tasks in queue</div></div>
+            <div className="stat-card"><div className="stat-value">{emailCount}</div><div className="stat-label">Emails triaged</div></div>
+            <div className="stat-card"><div className="stat-value">~2h</div><div className="stat-label">Time saved today</div></div>
+          </div>
+          <div className="grid-2">
+            <div className="card">
+              <div className="card-title">🎯 What this app does</div>
+              <div style={{fontSize:14,color:"rgba(232,228,220,0.6)",lineHeight:1.9}}>
+                <div style={{marginBottom:10}}>📧 <strong style={{color:"#e8e4dc"}}>Email Triage</strong> — Paste any email. AI classifies urgency and drafts your reply.</div>
+                <div style={{marginBottom:10}}>✅ <strong style={{color:"#e8e4dc"}}>Task Digest</strong> — Add your to-dos. AI ranks them by priority.</div>
+                <div>📅 <strong style={{color:"#e8e4dc"}}>Smart Schedule</strong> — Describe your day. AI builds your plan.</div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="card-title">🚀 Quick start</div>
+              <div style={{fontSize:13,color:"rgba(232,228,220,0.5)",lineHeight:2.2}}>
+                <div>1. Click <strong style={{color:"#c9a84c"}}>Email Triage</strong> → paste email → get AI reply</div>
+                <div>2. Click <strong style={{color:"#c9a84c"}}>Task Digest</strong> → add tasks → get priorities</div>
+                <div>3. Click <strong style={{color:"#c9a84c"}}>Smart Schedule</strong> → describe day → get plan</div>
+              </div>
+              <div className="tip-box">💡 All responses generated live by Claude AI.</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function EmailTriage({ onEmailAdded }) {
+      const [email, setEmail] = useState("");
+      const [result, setResult] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const SYSTEM = `You are an elite executive assistant AI. When given an email respond with:\n\nURGENCY: [CRITICAL / HIGH / MEDIUM / LOW]\nREASON: [One sentence]\nCATEGORY: [Client Request / Admin / Invoice / Meeting / Newsletter / Other]\nSUMMARY: [2-3 sentences]\nACTION: [What to do]\nDRAFT REPLY:\n[Professional reply, max 5 sentences]`;
+      async function triage() {
+        if (!email.trim()) return;
+        setLoading(true); setResult(null);
+        try { const r = await callClaude(SYSTEM, `Triage this email:\n\n${email}`); setResult(r); onEmailAdded(); }
+        catch(e) { setResult("Error. Please try again."); }
+        setLoading(false);
+      }
+      function badge(text) {
+        if (!text) return null;
+        if (text.includes("URGENCY: CRITICAL")) return <span className="badge badge-red">🔴 Critical</span>;
+        if (text.includes("URGENCY: HIGH")) return <span className="badge badge-amber">🟡 High</span>;
+        return <span className="badge badge-green">🟢 Normal</span>;
+      }
+      return (
+        <div>
+          <div className="page-title">Email Triage</div>
+          <div className="page-sub">Paste any email — AI classifies urgency and drafts your reply.</div>
+          <div className="card">
+            <div className="card-title">📧 Paste email content</div>
+            <textarea rows={8} placeholder="Paste the full email here..." value={email} onChange={e => setEmail(e.target.value)} />
+            <div style={{marginTop:14,display:"flex",gap:10}}>
+              <button className="btn btn-gold" onClick={triage} disabled={loading||!email.trim()}>
+                {loading ? <><span className="spinner"/> Analyzing...</> : "⚡ Triage Email"}
+              </button>
+              {email && <button className="btn btn-ghost" onClick={()=>{setEmail("");setResult(null);}}>Clear</button>}
+            </div>
+          </div>
+          {result && (
+            <div className="card" style={{border:"1px solid rgba(201,168,76,0.25)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+                <div className="card-title" style={{marginBottom:0}}>AI Analysis</div>
+                {badge(result)}
+              </div>
+              <div className="ai-response">{result}</div>
+            </div>
+          )}
+          {!result && !loading && <div className="tip-box">💡 Include the full email thread for the best reply.</div>}
+        </div>
+      );
+    }
+
+    function TaskDigest() {
+      const [taskInput, setTaskInput] = useState("");
+      const [tasks, setTasks] = useState([]);
+      const [result, setResult] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const SYSTEM = `You are a world-class productivity coach. Prioritize these tasks.\n\nFormat each task as:\nRANK [N] | [Task]\nWhy: [1 sentence]\nTime: [estimate]\nEnergy: [High/Medium/Low]\n\nEnd with:\n---\nSUMMARY: [2 sentences about the day]\nFOCUS BLOCK: [Best time for deep work]`;
+      function add() { if (!taskInput.trim()) return; setTasks([...tasks, taskInput.trim()]); setTaskInput(""); }
+      function remove(i) { setTasks(tasks.filter((_,idx)=>idx!==i)); }
+      async function prioritize() {
+        if (!tasks.length) return;
+        setLoading(true); setResult(null);
+        try { const r = await callClaude(SYSTEM, `Prioritize:\n${tasks.map((t,i)=>`${i+1}. ${t}`).join("\n")}`); setResult(r); }
+        catch(e) { setResult("Error. Please try again."); }
+        setLoading(false);
+      }
+      return (
+        <div>
+          <div className="page-title">Daily Task Digest</div>
+          <div className="page-sub">Add your to-dos and AI will rank them by impact and urgency.</div>
+          <div className="card">
+            <div className="card-title">✅ Your tasks today</div>
+            <div className="input-row">
+              <input type="text" placeholder="Add a task... (press Enter)" value={taskInput} onChange={e=>setTaskInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()} />
+              <button className="btn btn-gold" onClick={add} disabled={!taskInput.trim()}>+ Add</button>
+            </div>
+            {tasks.length === 0
+              ? <div className="empty-state"><div style={{fontSize:36,marginBottom:10}}>📋</div>No tasks yet.</div>
+              : <div style={{marginTop:10}}>{tasks.map((t,i)=><span key={i} className="tag">{t}<button onClick={()=>remove(i)}>×</button></span>)}</div>
+            }
+            {tasks.length > 0 && <div style={{marginTop:18}}>
+              <button className="btn btn-gold" onClick={prioritize} disabled={loading}>
+                {loading ? <><span className="spinner"/> Prioritizing...</> : "🎯 Prioritize My Day"}
+              </button>
+            </div>}
+          </div>
+          {result && <div className="card" style={{border:"1px solid rgba(201,168,76,0.25)"}}><div className="card-title">AI Priority List</div><div className="ai-response">{result}</div></div>}
+        </div>
+      );
+    }
+
+    function SmartSchedule() {
+      const [context, setContext] = useState("");
+      const [result, setResult] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const SYSTEM = `You are an elite personal scheduler. Create a detailed hour-by-hour schedule.\n\nFormat:\nSCHEDULE FOR TODAY\n==================\n[TIME] — [Activity]\n[Brief note]\n\nInclude focus blocks, breaks, and buffer time.\n\nEnd with:\n---\nKEY INSIGHT: [One observation]\nPROTECT AT ALL COSTS: [Most important block]`;
+      const example = "Team standup at 9am (30 min), client call at 2pm (1 hour), quarterly report due EOD. I work best mornings. Need to review 3 contracts and send 5 emails. Lunch around 12:30.";
+      async function generate() {
+        if (!context.trim()) return;
+        setLoading(true); setResult(null);
+        try { const r = await callClaude(SYSTEM, `Build my schedule:\n\n${context}`); setResult(r); }
+        catch(e) { setResult("Error. Please try again."); }
+        setLoading(false);
+      }
+      return (
+        <div>
+          <div className="page-title">Smart Scheduling</div>
+          <div className="page-sub">Describe your day — AI builds your optimized hour-by-hour plan.</div>
+          <div className="card">
+            <div className="card-title">📅 Describe your day</div>
+            <textarea rows={6} placeholder="Meetings with times, tasks, energy levels, deadlines..." value={context} onChange={e=>setContext(e.target.value)} />
+            <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
+              <button className="btn btn-gold" onClick={generate} disabled={loading||!context.trim()}>
+                {loading ? <><span className="spinner"/> Building...</> : "📅 Build My Schedule"}
+              </button>
+              <button className="btn btn-ghost" onClick={()=>setContext(example)}>Try Example</button>
+              {context && <button className="btn btn-ghost" onClick={()=>{setContext("");setResult(null);}}>Clear</button>}
+            </div>
+          </div>
+          {result && <div className="card" style={{border:"1px solid rgba(201,168,76,0.25)"}}><div className="card-title">Your AI Schedule</div><div className="ai-response">{result}</div></div>}
+          {!result && !loading && <div className="tip-box">💡 Include energy levels and deadlines for a more tailored schedule.</div>}
+        </div>
+      );
+    }
+
+    function App() {
+      const [page, setPage] = useState("dashboard");
+      const [taskCount, setTaskCount] = useState(0);
+      const [emailCount, setEmailCount] = useState(0);
+      const nav = [
+        {id:"dashboard",icon:"🏠",label:"Dashboard"},
+        {id:"email",icon:"📧",label:"Email Triage"},
+        {id:"tasks",icon:"✅",label:"Task Digest"},
+        {id:"schedule",icon:"📅",label:"Smart Schedule"},
+      ];
+      return (
+        <div className="app">
+          <nav className="sidebar">
+            <div className="logo">ARIA<span>AI Life Admin</span></div>
+            {nav.map(n=>(
+              <div key={n.id} className={`nav-item ${page===n.id?"active":""}`} onClick={()=>setPage(n.id)}>
+                <span style={{fontSize:18,width:22,textAlign:"center"}}>{n.icon}</span>{n.label}
+              </div>
+            ))}
+            <div style={{marginTop:"auto",padding:24,fontSize:11,color:"rgba(232,228,220,0.2)",lineHeight:1.6}}>ARIA MVP v1.0<br/>Powered by Claude AI</div>
+          </nav>
+          <main className="main">
+            {page==="dashboard" && <Dashboard taskCount={taskCount} emailCount={emailCount} />}
+            {page==="email" && <EmailTriage onEmailAdded={()=>setEmailCount(c=>c+1)} />}
+            {page==="tasks" && <TaskDigest />}
+            {page==="schedule" && <SmartSchedule />}
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
